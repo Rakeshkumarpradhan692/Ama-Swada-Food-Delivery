@@ -1,51 +1,47 @@
 const express = require("express");
+const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const dotenv = require("dotenv");
-
 const connectDB = require("./config/database");
 const errorHandler = require("./middleware/errorHandler");
 const allRoutes = require("./routes/allRoutes");
+const port = process.env.PORT || 9000;
+require("dotenv").config();
 
-dotenv.config();
+app.use(cors());
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, HEAD, OPTIONS, POST, PUT, DELETE"
+  );
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  next();
+});
 
-const app = express();
-
-// ✅ Connect to MongoDB
+app.use(bodyParser.json());
 connectDB();
 
-// ✅ CORS setup
-app.use(
-  cors({
-    origin: "*",
-    credentials: true,
-  })
-);
-
-// ✅ Body parser
-app.use(bodyParser.json());
-
-// ✅ API Routes
+// Routes
 app.use("/ama-swad-api", allRoutes);
 
-// ✅ Root Route
+// Error handling middleware
+app.use(errorHandler);
+
 app.get("/", (req, res) => {
-  res.json({
-    message: "Welcome to the ama-swad-api API",
-    api_version: "1.0",
+  res.send("APIs SERVER is perfectly working..");
+});
+
+// 404 Not Found Middleware
+app.use((req, res, next) => {
+  res.status(404).json({
+    message: "Your requested API not found",
   });
 });
 
-// ✅ 404 Handler
-app.use((req, res) => {
-  res.status(404).json({ message: "Your requested API not found" });
-});
-
-// ✅ Global Error Handler
-app.use(errorHandler);
-
-// ✅ Start server
-const port = process.env.PORT || 2000;
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`Server running at port:${port}`);
 });
