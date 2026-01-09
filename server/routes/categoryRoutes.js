@@ -9,5 +9,6 @@ router.put("/update-category/:id", categoryController.updateCategory);
 router.delete("/delete-category/:id", categoryController.deleteCategory);
 router.patch("/deactivate/:id", categoryController.deactivateCategory);
 router.patch("/activate/:id", categoryController.activateCategory);
+router.get("/active", categoryController.getCategoriesByActiveMode);
 
 module.exports = router;

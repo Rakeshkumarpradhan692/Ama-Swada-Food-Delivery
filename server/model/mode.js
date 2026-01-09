@@ -2,9 +2,13 @@ const mongoose = require("mongoose");
 
 const modeSchema = new mongoose.Schema(
   {
-    isVeg: {
-      type: Boolean,
+    name: {
+      type: String,
+      enum: ["veg", "non-veg"],
       required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
     },
 
     isActive: {

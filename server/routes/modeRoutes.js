@@ -1,9 +1,16 @@
 const express = require("express");
 const router = express.Router();
 
-const { upsertMode, getMode } = require("../controller/ModeController");
+const {
+  createModes,
+  getAllModes,
+  getActiveMode,
+  setActiveMode,
+} = require("../controller/ModeController");
 
-router.get("/get-mode", getMode);
-router.post("/set-mode", upsertMode);
+router.post("/create-mode", createModes);
+router.get("/get-all-mode", getAllModes);
+router.get("/get-active-mode", getActiveMode);
+router.patch("/activate-mode/:id", setActiveMode);
 
 module.exports = router;

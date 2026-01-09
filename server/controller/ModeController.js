@@ -1,29 +1,29 @@
 const Mode = require("../model/mode");
 
-exports.upsertMode = async (req, res) => {
-  console.log("set mode///////////");
+exports.createModes = async (req, res) => {
   try {
-    const { isVeg } = req.body;
+    const { name } = req.body;
 
-    if (typeof isVeg !== "boolean") {
+    if (!name || !["veg", "non-veg"].includes(name)) {
       return res.status(400).json({
         success: false,
-        message: "isVeg must be true or false",
+        message: "Mode must be 'veg' or 'non-veg'",
       });
     }
 
-    let mode = await Mode.findOne();
-
-    if (mode) {
-      mode.isVeg = isVeg;
-      await mode.save();
-    } else {
-      mode = await Mode.create({ isVeg });
+    const exists = await Mode.findOne({ name });
+    if (exists) {
+      return res.status(409).json({
+        success: false,
+        message: "Mode already exists",
+      });
     }
 
-    res.status(200).json({
+    const mode = await Mode.create({ name });
+
+    res.status(201).json({
       success: true,
-      message: "Mode updated successfully",
+      message: "Mode created successfully",
       data: mode,
     });
   } catch (error) {
@@ -34,13 +34,68 @@ exports.upsertMode = async (req, res) => {
   }
 };
 
-exports.getMode = async (req, res) => {
+exports.getAllModes = async (req, res) => {
   try {
-    const mode = await Mode.findOne({ isActive: true });
+    const modes = await Mode.find().sort({ createdAt: 1 });
 
     res.status(200).json({
       success: true,
-      data: mode,
+      data: modes,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.getActiveMode = async (req, res) => {
+  try {
+    const activeMode = await Mode.findOne({ isActive: true });
+
+    if (!activeMode) {
+      return res.status(404).json({
+        success: false,
+        message: "No active mode found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: activeMode,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.setActiveMode = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await Mode.updateMany({}, { isActive: false });
+
+    const activeMode = await Mode.findByIdAndUpdate(
+      id,
+      { isActive: true },
+      { new: true }
+    );
+
+    if (!activeMode) {
+      return res.status(404).json({
+        success: false,
+        message: "Mode not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Mode activated successfully",
+      data: activeMode,
     });
   } catch (error) {
     res.status(500).json({
